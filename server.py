@@ -1,28 +1,44 @@
-''' Executing this function initiates the application of sentiment
-    analysis to be executed over the Flask channel and deployed on
-    localhost:5000.
-'''
-# Import Flask, render_template, request from the flask pramework package : TODO
-# Import the sentiment_analyzer function from the package created: TODO
+"""
+This module provides functionalities for emotion detection using Flask.
+"""
 
-#Initiate the flask app : TODO
+from flask import Flask, render_template, request
+from EmotionDetection.emotion_detection import emotion_detector
 
-@app.route("/sentimentAnalyzer")
-def sent_analyzer():
-    ''' This code receives the text from the HTML interface and 
-        runs sentiment analysis over it using sentiment_analysis()
-        function. The output returned shows the label and its confidence 
-        score for the provided text.
-    '''
-    # TODO
+app = Flask("Emotion Detection")
+
+@app.route("/emotionDetector")
+def sent_detector():
+    """
+    Analyze the user-provided text for emotions and return the result.
+
+    Parameters:
+    None (uses query parameter 'textToAnalyze' from the request)
+
+    Returns:
+    JSON object containing the detected emotion label and score.
+
+    """
+    # Retrieve the text to analyze from the request arguments
+    text_to_analyze = request.args.get('textToAnalyze')
+    # Pass the text to the sentiment_analyzer function and store the response
+    response = emotion_detector(text_to_analyze)
+    # Check if the label is None, indicating an error or invalid input
+    if response['Dominant'] is None:
+        return "Invalid input! Please try again."
+    return (
+        f"For the given statement, the system response is 'anger': {response['anger']} "
+        f"'disgust': {response['disgust']}, 'fear': {response['fear']}, "
+        f"'joy': {response['joy']} and 'sadness': {response['sadness']}. "
+        f"The dominant emotion is <b>{response['Dominant']}</b>."
+    )
 
 @app.route("/")
 def render_index_page():
     ''' This function initiates the rendering of the main application
         page over the Flask channel
     '''
-    #TODO
+    return render_template('index.html')
 
 if __name__ == "__main__":
-    ''' This functions executes the flask app and deploys it on localhost:5000
-    '''#TODO
+    app.run(host="0.0.0.0", port=3000)
